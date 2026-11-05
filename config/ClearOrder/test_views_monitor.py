@@ -298,6 +298,69 @@ class SimuladorDataTests(TestCase):
         self.assertNotIn('data_simulada', self.client.session)
 
 
+class ResetarDataSimuladaTests(TestCase):
+    """POST /monitor/resetar-data/ restaura a data real do sistema."""
+
+    def setUp(self):
+        user = User.objects.create_user('mon_reset', password='x')
+        Monitor.objects.create(
+            user=user, siape='4443332', cpf='12345678901',
+            bloco_responsavel='B',
+        )
+        self.client = Client(SERVER_NAME='localhost')
+        self.client.force_login(user)
+
+    def simular_data(self, dias=1):
+        sessao = self.client.session
+        sessao['data_simulada'] = (
+            timezone.localdate() + timedelta(days=dias)
+        ).isoformat()
+        sessao.save()
+
+    def test_post_remove_data_simulada_e_redireciona(self):
+        self.simular_data()
+
+        resposta = self.client.post(
+            reverse('resetar_data_simulada'),
+            HTTP_REFERER=reverse('painel_monitor'),
+        )
+
+        self.assertEqual(resposta.status_code, 302)
+        self.assertEqual(resposta.url, reverse('painel_monitor'))
+        self.assertNotIn('data_simulada', self.client.session)
+
+        html = self.client.get(reverse('painel_monitor')).content.decode()
+        self.assertIn(
+            'Data Atual: %s' % timezone.localdate().strftime('%d/%m/%Y'),
+            html,
+        )
+
+    def test_sem_referer_redireciona_para_o_painel(self):
+        self.simular_data()
+
+        resposta = self.client.post(reverse('resetar_data_simulada'))
+
+        self.assertEqual(resposta.status_code, 302)
+        self.assertEqual(resposta.url, reverse('painel_monitor'))
+        self.assertNotIn('data_simulada', self.client.session)
+
+    def test_botao_hoje_so_aparece_com_data_simulada(self):
+        html = self.client.get(reverse('painel_monitor')).content.decode()
+        self.assertNotIn('🔄 Hoje', html)
+
+        self.simular_data()
+        html = self.client.get(reverse('painel_monitor')).content.decode()
+        self.assertIn('🔄 Hoje', html)
+
+    def test_get_nao_reseta_a_data(self):
+        self.simular_data()
+
+        resposta = self.client.get(reverse('resetar_data_simulada'))
+
+        self.assertEqual(resposta.status_code, 405)
+        self.assertIn('data_simulada', self.client.session)
+
+
 class CondecoracaoRepresentanteTests(TestCase):
     """A Gestao atribui/substitui representante sem tocar na modalidade."""
 

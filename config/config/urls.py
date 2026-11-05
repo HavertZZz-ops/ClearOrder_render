@@ -5,7 +5,7 @@ from django.urls import path
 from django.views.generic import RedirectView
 
 
-from ClearOrder.views import concluir_tarefa, enviar_relatorio, fazer_logout, login_view, painel_estudante, painel_monitor, detalhes_quarto, progresso, reportar_problema, verificar_reparo, chamados_view, gerar_cronograma_view, simular_proximo_dia, marcar_notificacao_lida, limpar_notificacoes, gestao_monitor_view, atualizar_foto_perfil, vistoria_quarto, analytics_json, qrcode_quarto_svg, exportar_relatorio_csv, relatorio_pdf_view;
+from ClearOrder.views import concluir_tarefa, enviar_relatorio, fazer_logout, login_view, painel_estudante, painel_monitor, detalhes_quarto, progresso, reportar_problema, verificar_reparo, chamados_view, gerar_cronograma_view, simular_proximo_dia, resetar_data_simulada, marcar_notificacao_lida, limpar_notificacoes, gestao_monitor_view, atualizar_foto_perfil, vistoria_quarto, analytics_json, qrcode_quarto_svg, exportar_relatorio_csv, relatorio_pdf_view;
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,6 +14,7 @@ urlpatterns = [
     path('aluno/', painel_estudante, name='painel_estudante'),
     path('monitor/', painel_monitor, name='painel_monitor'),
     path('monitor/simular-data/', simular_proximo_dia, name='simular_proximo_dia'),
+    path('monitor/resetar-data/', resetar_data_simulada, name='resetar_data_simulada'),
     path('monitor/gestao/', gestao_monitor_view, name='gestao_monitor'),
     path('logout/', fazer_logout, name='logout'),
     path('tarefa/<int:tarefa_id>/concluir/', concluir_tarefa, name='concluir_tarefa'),

@@ -9,5 +9,13 @@
             ⏩ +1 Dia
         </button>
     </form>
+    {% if request.session.data_simulada %}
+    <form action="{% url 'resetar_data_simulada' %}" method="POST" class="inline">
+        {% csrf_token %}
+        <button type="submit" title="Voltar para a data real do sistema" class="px-2.5 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold transition-all shadow-sm flex items-center gap-1 border border-slate-600">
+            🔄 Hoje
+        </button>
+    </form>
+    {% endif %}
     {% endif %}
 </div>

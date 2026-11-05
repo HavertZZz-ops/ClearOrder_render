@@ -14,7 +14,7 @@ from datetime import timedelta
 import calendar
 
 from .cronograma_utils import janela_da_semana
-from .data_simulada import avancar_dia, data_referencia
+from .data_simulada import avancar_dia, data_referencia, limpar_simulacao
 from .analytics_utils import (
     chamados_por_categoria,
     payload_analytics,
@@ -608,6 +608,28 @@ def simular_proximo_dia(request):
         request,
         'Data simulada avançada para %s.' % nova_data.strftime('%d/%m/%Y'),
     )
+
+    destino = request.META.get('HTTP_REFERER') or reverse('painel_monitor')
+    if not url_has_allowed_host_and_scheme(
+        destino,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        destino = reverse('painel_monitor')
+    return redirect(destino)
+
+
+@login_required
+@require_POST
+def resetar_data_simulada(request):
+    """
+    Volta a usar a data real do sistema (botao "Hoje" da topbar).
+
+    A data simulada existe apenas na sessao do usuario; removemos a chave e
+    redirecionamos de volta para a tela de origem. Nada e gravado no banco.
+    """
+    limpar_simulacao(request)
+    messages.info(request, 'Data restaurada para a data real do sistema.')
 
     destino = request.META.get('HTTP_REFERER') or reverse('painel_monitor')
     if not url_has_allowed_host_and_scheme(
