@@ -1,29 +1,34 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.py[cod]
-.Python
-
-# Virtual environments
-env/
+﻿# Virtual environment
 venv/
 .venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Django
 *.sqlite3
 db.sqlite3
-staticfiles/
-mediafiles/
+/staticfiles/
+/media/
 
-# Environment / secrets
-.env
-.env.*
-!.env.example
-pip-log.txt
+# OS
+.DS_Store
+Thumbs.db
 
-# IDEs / editors
+# IDE
 .vscode/
 .idea/
 *.swp
+*.swo
+
+# Env
+.env
+.env.*
