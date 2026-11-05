@@ -3,3 +3,4 @@ psycopg[binary]==3.3.8
 Pillow==13.0.0
 gunicorn==23.0.0
 dj-database-url==2.2.0
+whitenoise==6.9.0
