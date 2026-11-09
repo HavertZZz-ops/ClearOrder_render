@@ -1,13 +1,44 @@
 {% load static %}
 <aside id="sidebar-mobile"
     class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white border-r border-slate-200 flex flex-col justify-between -translate-x-full overflow-y-auto md:static md:translate-x-0 md:w-64 md:shrink-0 dark:bg-slate-900 dark:border-slate-700 transition-transform duration-200">
+    <style>
+        /*
+            Sidebar recolhivel no desktop (>= md). No mobile o mesmo <aside>
+            continua sendo a gaveta cheia, entao as regras ficam na media
+            query. O estado e aplicado por alternarSidebar() em _sidebar.html.
+        */
+        @media (min-width: 768px) {
+            #sidebar-mobile {
+                transition: width .2s ease, transform .2s ease;
+            }
+            #sidebar-mobile.sidebar-recolhida {
+                width: 5rem;
+            }
+            #sidebar-mobile.sidebar-recolhida .sidebar-texto,
+            #sidebar-mobile.sidebar-recolhida .sidebar-perfil {
+                display: none;
+            }
+            #sidebar-mobile.sidebar-recolhida .sidebar-logo {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            #sidebar-mobile.sidebar-recolhida .sidebar-link {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+                border-left-width: 0;
+            }
+        }
+    </style>
+
     <div>
         <!-- Logo -->
-        <div class="p-6 flex items-center space-x-3">
+        <div class="sidebar-logo p-6 flex items-center space-x-3">
             <div class="bg-[#0b4a42] text-emerald-400 rounded-2xl flex items-center justify-center shadow-md shadow-emerald-900/20">
                 <img src="{% static 'img/logo_casa.svg' %}" alt="Logo" class="w-6 h-6">
             </div>
-            <span class="text-xl font-black text-emerald-950 tracking-tight dark:text-emerald-300">CleanOrder</span>
+            <span class="sidebar-texto text-xl font-black text-emerald-950 tracking-tight dark:text-emerald-300">CleanOrder</span>
             <button type="button" onclick="fecharMenuMobile()" aria-label="Fechar menu"
                 class="md:hidden ml-auto w-9 h-9 rounded-xl bg-slate-100 text-slate-500 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center transition dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
                 <i class="fa-solid fa-xmark"></i>
@@ -15,7 +46,7 @@
         </div>
 
         <!-- Identificação do Perfil -->
-        <div class="px-4 mt-2 mb-6">
+        <div class="sidebar-perfil px-4 mt-2 mb-6">
             <div class="px-4 py-3 bg-slate-100/70 border border-slate-200/70 rounded-2xl dark:bg-slate-800 dark:border-slate-700">
                 <span class="text-[10px] font-bold tracking-wider text-emerald-700 uppercase block mb-0.5 dark:text-emerald-400">Perfil</span>
                 <span class="text-sm font-bold text-slate-800 dark:text-slate-100">
@@ -27,34 +58,34 @@
         <!-- Menu de Navegação -->
         <nav class="px-4 space-y-1.5">
             {% if request.user.monitor %}
-                <a href="{% url 'painel_monitor' %}"
-                    class="flex items-center space-x-3 px-4 py-3 {% if request.path == '/monitor/' or request.path|slice:':8' == '/quarto/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
+                <a href="{% url 'painel_monitor' %}" title="Vistorias" aria-label="Vistorias"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 {% if request.path == '/monitor/' or request.path|slice:':8' == '/quarto/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
                     <i class="fa-solid fa-clipboard-check w-5 text-center"></i>
-                    <span>Vistorias</span>
+                    <span class="sidebar-texto">Vistorias</span>
                 </a>
 
-                <a href="{% url 'chamados' %}"
-                    class="flex items-center space-x-3 px-4 py-3 {% if request.path == '/chamados/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
+                <a href="{% url 'chamados' %}" title="Chamados" aria-label="Chamados"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 {% if request.path == '/chamados/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
                     <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i>
-                    <span>Chamados</span>
+                    <span class="sidebar-texto">Chamados</span>
                 </a>
 
-                <a href="{% url 'gestao_monitor' %}"
-                    class="flex items-center space-x-3 px-4 py-3 {% if request.path|slice:':15' == '/monitor/gestao' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
+                <a href="{% url 'gestao_monitor' %}" title="Gestão do Alojamento" aria-label="Gestão do Alojamento"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 {% if request.path|slice:':15' == '/monitor/gestao' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
                     <i class="fa-solid fa-sliders w-5 text-center"></i>
-                    <span>Gestão do Alojamento</span>
+                    <span class="sidebar-texto">Gestão do Alojamento</span>
                 </a>
             {% else %}
-                <a href="{% url 'painel_estudante' %}"
-                    class="flex items-center space-x-3 px-4 py-3 {% if request.path == '/aluno/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
+                <a href="{% url 'painel_estudante' %}" title="Início" aria-label="Início"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 {% if request.path == '/aluno/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
                     <i class="fa-solid fa-house w-5 text-center"></i>
-                    <span>Início</span>
+                    <span class="sidebar-texto">Início</span>
                 </a>
 
-                <a href="{% url 'progresso' %}"
-                    class="flex items-center space-x-3 px-4 py-3 {% if request.path == '/progresso/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
+                <a href="{% url 'progresso' %}" title="Progresso" aria-label="Progresso"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 {% if request.path == '/progresso/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
                     <i class="fa-solid fa-fire w-5 text-center"></i>
-                    <span>Progresso</span>
+                    <span class="sidebar-texto">Progresso</span>
                 </a>
 
                 <!--<a href="{% url 'reportar_problema' %}"
@@ -63,20 +94,27 @@
                     <span>Infraestrutura</span>
                 </a>-->
 
-                <a href="{% url 'chamados' %}"
-                    class="flex items-center space-x-3 px-4 py-3 {% if request.path == '/chamados/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
+                <a href="{% url 'chamados' %}" title="Chamados" aria-label="Chamados"
+                    class="sidebar-link flex items-center space-x-3 px-4 py-3 {% if request.path == '/chamados/' %}bg-emerald-50 text-emerald-800 border-l-4 border-emerald-600 font-semibold{% else %}text-emerald-950/70 hover:bg-emerald-50 hover:text-emerald-800 font-medium{% endif %} rounded-2xl transition dark:bg-slate-800 dark:text-emerald-200 dark:border-slate-700">
                     <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i>
-                    <span>Chamados</span>
+                    <span class="sidebar-texto">Chamados</span>
                 </a>
             {% endif %}
         </nav>
     </div>
 
     <!--Botão Logout-->
-    <div class="p-4 border-t border-slate-200/70 dark:border-slate-700">
-        <a href="{% url 'logout' %}" class="flex items-center space-x-3 px-4 py-3 text-emerald-950/70 hover:bg-rose-50 hover:text-rose-700 rounded-2xl transition font-medium dark:text-emerald-300/70 dark:hover:bg-rose-950/40 dark:hover:text-rose-300">
+    <div class="p-4 border-t border-slate-200/70 dark:border-slate-700 space-y-1">
+        <button type="button" id="btn-recolher-sidebar" onclick="alternarSidebar()"
+            aria-controls="sidebar-mobile" aria-expanded="true" aria-label="Recolher menu" title="Recolher menu"
+            class="sidebar-link hidden md:flex w-full items-center space-x-3 px-4 py-2.5 rounded-2xl text-slate-500 hover:bg-slate-100 hover:text-emerald-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-emerald-300 transition text-sm font-semibold">
+            <i class="fa-solid fa-angles-left w-5 text-center"></i>
+            <span class="sidebar-texto">Recolher</span>
+        </button>
+
+        <a href="{% url 'logout' %}" title="Sair da Conta" aria-label="Sair da Conta" class="sidebar-link flex items-center space-x-3 px-4 py-3 text-emerald-950/70 hover:bg-rose-50 hover:text-rose-700 rounded-2xl transition font-medium dark:text-emerald-300/70 dark:hover:bg-rose-950/40 dark:hover:text-rose-300">
             <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i>
-            <span>Sair da Conta</span>
+            <span class="sidebar-texto">Sair da Conta</span>
         </a>
     </div>
 </aside>
@@ -121,6 +159,76 @@
             fundo.classList.add('hidden');
             atualizarEstado(false);
         };
+
+        /*
+            Sidebar recolhivel no desktop. O estado fica em localStorage;
+            no mobile a classe e inerte (as regras so valem a partir de md).
+        */
+        function aplicarSidebarRecolhida(recolhida) {
+            var menu = document.getElementById('sidebar-mobile');
+            var botao = document.getElementById('btn-recolher-sidebar');
+            if (!menu) return;
+
+            menu.classList.toggle('sidebar-recolhida', recolhida);
+            if (!botao) return;
+
+            var rotulo = recolhida ? 'Expandir menu' : 'Recolher menu';
+            botao.setAttribute('aria-expanded', recolhida ? 'false' : 'true');
+            botao.setAttribute('aria-label', rotulo);
+            botao.setAttribute('title', rotulo);
+
+            var icone = botao.querySelector('i');
+            if (icone) {
+                icone.className = 'fa-solid ' +
+                    (recolhida ? 'fa-angles-right' : 'fa-angles-left') +
+                    ' w-5 text-center';
+            }
+
+            var texto = botao.querySelector('.sidebar-texto');
+            if (texto) {
+                texto.textContent = recolhida ? 'Expandir' : 'Recolher';
+            }
+        }
+
+        try {
+            aplicarSidebarRecolhida(
+                localStorage.getItem('cleanorder-sidebar') === 'recolhida'
+            );
+        } catch (e) {
+            aplicarSidebarRecolhida(false);
+        }
+
+        window.alternarSidebar = function () {
+            var menu = document.getElementById('sidebar-mobile');
+            if (!menu) return;
+
+            var recolhida = !menu.classList.contains('sidebar-recolhida');
+            aplicarSidebarRecolhida(recolhida);
+
+            try {
+                localStorage.setItem(
+                    'cleanorder-sidebar',
+                    recolhida ? 'recolhida' : 'expandida'
+                );
+            } catch (e) { /* localStorage bloqueado: so nao persiste */ }
+        };
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key !== '[') return;
+            if (!window.matchMedia('(min-width: 768px)').matches) return;
+
+            var alvo = event.target;
+            if (alvo && (
+                alvo.tagName === 'INPUT' ||
+                alvo.tagName === 'TEXTAREA' ||
+                alvo.tagName === 'SELECT' ||
+                alvo.isContentEditable
+            )) {
+                return;
+            }
+
+            window.alternarSidebar();
+        });
 
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {

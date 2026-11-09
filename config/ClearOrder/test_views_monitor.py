@@ -318,6 +318,25 @@ class NavegacaoMobileTests(TestCase):
                 self.assertTrue(self.aside(html), rota)
                 self.assertIn('id="btn-menu-mobile"', html)
 
+    def test_sidebar_do_desktop_recolhe_para_rail_de_icones(self):
+        """
+        No desktop a sidebar continua fixa, mas pode recolher para um rail
+        de icones. O estado precisa persistir e nao pode afetar a gaveta
+        do celular.
+        """
+        self.client.force_login(self.user_monitor)
+        html = self.client.get(reverse('painel_monitor')).content.decode()
+
+        self.assertIn('id="btn-recolher-sidebar"', html)
+        self.assertIn('aria-label="Recolher menu"', html)
+        self.assertIn('alternarSidebar', html)
+        self.assertIn("localStorage.getItem('cleanorder-sidebar')", html)
+        self.assertIn('@media (min-width: 768px)', html)
+        self.assertIn('sidebar-recolhida .sidebar-texto', html)
+        self.assertIn('sidebar-recolhida .sidebar-link', html)
+        self.assertIn('sidebar-texto">Vistorias', html)
+        self.assertIn('sidebar-texto">Sair da Conta', html)
+
     def test_criterio_das_janelas_nao_cita_cortinas(self):
         """
         No Bloco C as cortinas sao permitidas; o criterio deve falar apenas

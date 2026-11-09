@@ -1871,7 +1871,7 @@ class GestaoMonitorTests(TestCase):
         self.assertIn('Gestão do Alojamento', html)
         # o item ativo usa o fundo azul
         import re as _re
-        m = _re.search(r'<a href="%s"\s+class="([^"]*)"' % _re.escape(self.url), html)
+        m = _re.search(r'<a href="%s"[^>]*?class="([^"]*)"' % _re.escape(self.url), html)
         self.assertIsNotNone(m, 'link de gestao nao encontrado com class')
         self.assertIn('bg-emerald-50', m.group(1))
         self.assertIn('border-l-4', m.group(1))
