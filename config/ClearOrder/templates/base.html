@@ -41,7 +41,7 @@
                     Sino + notificações REAIS (context processor).
                     Badge mostra a contagem de não lidas e some quando é 0.
                 {% endcomment %}
-                <div class="relative">
+                <div class="static sm:relative">
                     <button type="button" onclick="toggleNotificacoes(event)"
                         aria-label="Notificações" aria-expanded="false"
                         class="relative text-slate-400 hover:text-emerald-700 transition">
@@ -52,8 +52,14 @@
                         {% endif %}
                     </button>
 
+                    {% comment %}
+                        No celular o dropdown é ancorado no header (que é o
+                        ancestral posicionado, pois o wrapper é `static`):
+                        ocupa a largura da tela com margem e nasce abaixo do
+                        header. A partir de sm volta a ser ancorado no sino.
+                    {% endcomment %}
                     <div id="dropdown-notificacoes"
-                        class="absolute right-0 mt-3 w-[calc(100vw-2rem)] max-w-sm bg-white rounded-3xl border border-slate-200/70 shadow-xl z-50 hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+                        class="absolute left-4 right-4 top-full mt-2 w-auto max-h-[calc(100vh-7rem)] overflow-y-auto bg-white rounded-3xl border border-slate-200/70 shadow-xl z-50 hidden sm:left-auto sm:right-0 sm:mt-3 sm:w-80 sm:max-h-none sm:overflow-visible">
 
                         <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200/70">
                             <span class="text-sm font-bold text-slate-800">Notificações</span>
@@ -194,11 +200,17 @@
             }
         }
 
-        document.addEventListener('click', function () {
+        document.addEventListener('click', function (event) {
             var menu = document.getElementById('dropdown-notificacoes');
-            if (menu && !menu.classList.contains('hidden')) {
-                fecharNotificacoes();
+            if (!menu || menu.classList.contains('hidden')) {
+                return;
             }
+            // Toques/cliques dentro do painel (rolar, tocar num item) nao
+            // devem fecha-lo; so clicar fora fecha.
+            if (menu.contains(event.target)) {
+                return;
+            }
+            fecharNotificacoes();
         });
 
         document.addEventListener('keydown', function (event) {

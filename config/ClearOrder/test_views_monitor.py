@@ -332,6 +332,56 @@ class NavegacaoMobileTests(TestCase):
         self.assertIn('sem varais ou objetos nas janelas', html)
 
 
+class DropdownNotificacoesMobileTests(TestCase):
+    """
+    Regressao: o dropdown era ancorado no sino com `right-0` e largura
+    `100vw-2rem`. No celular ele comecava fora da tela (x negativo) e o
+    texto aparecia cortado. Agora, abaixo de sm, ele e ancorado no header
+    e ocupa a largura da tela com margem.
+    """
+
+    def setUp(self):
+        quarto = Quarto.objects.create(numero='902', bloco='O')
+        self.user_monitor = User.objects.create_user('mon_notif', password='x')
+        Monitor.objects.create(
+            user=self.user_monitor, siape='7654321', cpf='33333333333',
+            bloco_responsavel='O',
+        )
+        self.user_estudante = User.objects.create_user('est_notif', password='x')
+        Estudante.objects.create(
+            user=self.user_estudante, matricula='NOT1', cpf='44444444444',
+            quarto=quarto,
+        )
+        self.client = Client(SERVER_NAME='localhost')
+
+    def assert_dropdown_mobile(self, html):
+        self.assertIn('static sm:relative', html)
+        self.assertIn('absolute left-4 right-4 top-full', html)
+        self.assertIn('sm:right-0 sm:mt-3 sm:w-80', html)
+        self.assertNotIn(
+            'w-[calc(100vw-2rem)]', html,
+            'a largura fixa em 100vw empurrava o dropdown para fora da tela',
+        )
+        self.assertIn(
+            'menu.contains(event.target)', html,
+            'tocar dentro do dropdown nao pode fecha-lo',
+        )
+
+    def test_dropdown_do_estudante_nao_sai_da_tela_no_mobile(self):
+        self.client.force_login(self.user_estudante)
+        for rota in ('painel_estudante', 'progresso', 'chamados'):
+            with self.subTest(tela=rota):
+                html = self.client.get(reverse(rota)).content.decode()
+                self.assert_dropdown_mobile(html)
+
+    def test_dropdown_do_monitor_nao_sai_da_tela_no_mobile(self):
+        self.client.force_login(self.user_monitor)
+        for rota in ('painel_monitor', 'chamados', 'gestao_monitor'):
+            with self.subTest(tela=rota):
+                html = self.client.get(reverse(rota)).content.decode()
+                self.assert_dropdown_mobile(html)
+
+
 class SimuladorDataTests(TestCase):
     """POST /monitor/simular-data/ avanca a data da sessao em +1 dia."""
 
