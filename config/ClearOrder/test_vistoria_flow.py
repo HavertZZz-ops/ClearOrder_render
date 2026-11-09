@@ -2066,13 +2066,21 @@ class ModalPerfilTests(TestCase):
         self.assertIn("classList.add('hidden')", fechar)
         self.assertIn("classList.remove('flex')", fechar)
 
-    # ---------- 4. estilo SUAP ----------
-    def test_estetica_suap(self):
+    # ---------- 4. estilo ----------
+    def test_estetica_do_modal(self):
         html = self.html_de(self.u_est)
         self.assertIn('bg-slate-900/40', html)          # fundo do modal
-        self.assertIn('backdrop-blur-xs', html)
+        self.assertIn('backdrop-blur-sm', html)
         self.assertIn('bg-[#00e6a5] text-teal-950', html)  # avatar menta
-        self.assertIn('bg-emerald-100 text-emerald-800', html)  # badge de perfil
+        self.assertIn('from-[#0b4a42]', html)           # cabecalho com gradiente
+        self.assertIn('ring-white/20', html)            # badge translucido
+
+    def test_modal_cabe_e_rola_em_telas_pequenas(self):
+        """Em 320px o card estourava a tela e cortava o rodape."""
+        html = self.html_de(self.u_est)
+        self.assertIn('max-h-[calc(100vh-1.5rem)]', html)
+        self.assertIn('flex-1 overflow-y-auto', html)
+        self.assertIn('shrink-0 flex gap-3', html)      # rodape sempre visivel
 
     # ---------- 5. rodape / logout ----------
     def test_form_de_sair_usa_post_para_logout(self):
@@ -2403,14 +2411,20 @@ class TemaClaroEscuroTests(TestCase):
         self.assertIn('function aplicarTema(tema)', html)
         self.assertIn("localStorage.setItem('cleanorder-theme'", html)
 
-    def test_botoes_claro_e_escuro(self):
+    def test_botao_de_tema_fica_somente_na_topbar(self):
+        """
+        O toggle do tema existia na topbar E dentro do modal de perfil.
+        Agora ha um lugar so: a topbar.
+        """
         html = self.html()
-        self.assertIn("data-tema-btn=\"light\"", html)
-        self.assertIn("data-tema-btn=\"dark\"", html)
-        self.assertIn('Tema Claro', html)
-        self.assertIn('Tema Escuro', html)
-        self.assertIn("aplicarTema('dark')", html)
-        self.assertIn("aplicarTema('light')", html)
+        self.assertIn('aria-label="Alternar tema claro e escuro"', html)
+        self.assertIn("aplicarTema(temaAtual() === 'dark' ? 'light' : 'dark')", html)
+
+        modal = html[html.index('id="modal-perfil"'):]
+        self.assertNotIn('data-tema-btn', modal)
+        self.assertNotIn('Tema Claro', modal)
+        self.assertNotIn('Tema Escuro', modal)
+        self.assertNotIn('Personalização', modal)
 
     def test_layout_tem_variantes_dark(self):
         html = self.html()
