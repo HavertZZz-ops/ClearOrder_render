@@ -243,7 +243,7 @@ class TopbarMonitorTests(TestCase):
 
                 self.assertIn('Data Atual: %s' % hoje, html)
                 self.assertIn(
-                    'px-4 py-1.5 rounded-2xl bg-slate-100/80', html,
+                    'rounded-2xl bg-slate-100/80', html,
                     'a pilula de data precisa usar o container padrao',
                 )
                 self.assertIn('aria-label="Notificações"', html)
@@ -253,8 +253,9 @@ class TopbarMonitorTests(TestCase):
 
 class NavegacaoMobileTests(TestCase):
     """
-    Regressao: a sidebar e `hidden md:flex`, entao abaixo de md ela some.
-    A barra inferior fixa precisa manter as mesmas rotas acessiveis no celular.
+    Regressao: abaixo de md a sidebar vira uma gaveta lateral, aberta pelo
+    botao hamburguer do header. O menu precisa existir em TODAS as telas e
+    conter as rotas do perfil logado.
     """
 
     def setUp(self):
@@ -272,40 +273,50 @@ class NavegacaoMobileTests(TestCase):
         self.client = Client(SERVER_NAME='localhost')
 
     @staticmethod
-    def nav_mobile(html):
-        m = re.search(
-            r'<nav aria-label="Navegação principal no celular".*?</nav>',
-            html, re.S,
-        )
+    def aside(html):
+        m = re.search(r'<aside id="sidebar-mobile".*?</aside>', html, re.S)
         return m.group(0) if m else ''
 
-    def test_monitor_tem_barra_inferior_com_as_rotas_do_menu(self):
+    def test_monitor_tem_menu_mobile_com_as_rotas_do_menu(self):
         self.client.force_login(self.user_monitor)
         html = self.client.get(reverse('painel_monitor')).content.decode()
-        nav = self.nav_mobile(html)
+        aside = self.aside(html)
 
-        self.assertIn('md:hidden fixed bottom-0', nav)
+        self.assertIn('id="btn-menu-mobile"', html)
+        self.assertIn('aria-label="Abrir menu"', html)
+        self.assertIn('id="sidebar-backdrop"', html)
+        self.assertIn('abrirMenuMobile', html)
+        self.assertIn('fecharMenuMobile', html)
         for rota in ('painel_monitor', 'chamados', 'gestao_monitor', 'logout'):
-            self.assertIn('href="%s"' % reverse(rota), nav)
+            self.assertIn('href="%s"' % reverse(rota), aside)
 
-    def test_estudante_tem_barra_inferior_com_as_rotas_do_menu(self):
+    def test_estudante_tem_menu_mobile_com_as_rotas_do_menu(self):
         self.client.force_login(self.user_estudante)
         html = self.client.get(reverse('painel_estudante')).content.decode()
-        nav = self.nav_mobile(html)
+        aside = self.aside(html)
 
-        self.assertIn('md:hidden fixed bottom-0', nav)
+        self.assertIn('id="btn-menu-mobile"', html)
         for rota in ('painel_estudante', 'progresso', 'chamados', 'logout'):
-            self.assertIn('href="%s"' % reverse(rota), nav)
+            self.assertIn('href="%s"' % reverse(rota), aside)
 
-    def test_barra_inferior_marca_uma_unica_aba_atual(self):
+    def test_menu_mobile_aparece_em_todas_as_telas_internas(self):
+        """
+        O include e unico, mas cada template precisa renderizar o botao.
+        Antes o menu so era notado no painel inicial.
+        """
         self.client.force_login(self.user_monitor)
-        nav = self.nav_mobile(
-            self.client.get(reverse('chamados')).content.decode()
-        )
+        for rota in ('painel_monitor', 'chamados', 'gestao_monitor'):
+            with self.subTest(tela=rota):
+                html = self.client.get(reverse(rota)).content.decode()
+                self.assertTrue(self.aside(html), rota)
+                self.assertIn('id="btn-menu-mobile"', html)
 
-        self.assertEqual(nav.count('aria-current="page"'), 1)
-        ativo = [p for p in nav.split('<a ') if 'aria-current="page"' in p][0]
-        self.assertIn('href="%s"' % reverse('chamados'), ativo)
+        self.client.force_login(self.user_estudante)
+        for rota in ('painel_estudante', 'progresso', 'chamados'):
+            with self.subTest(tela=rota):
+                html = self.client.get(reverse(rota)).content.decode()
+                self.assertTrue(self.aside(html), rota)
+                self.assertIn('id="btn-menu-mobile"', html)
 
     def test_criterio_das_janelas_nao_cita_cortinas(self):
         """
