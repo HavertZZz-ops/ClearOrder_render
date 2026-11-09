@@ -251,6 +251,76 @@ class TopbarMonitorTests(TestCase):
                 self.assertIn('aria-label="Alternar tema claro e escuro"', html)
 
 
+class NavegacaoMobileTests(TestCase):
+    """
+    Regressao: a sidebar e `hidden md:flex`, entao abaixo de md ela some.
+    A barra inferior fixa precisa manter as mesmas rotas acessiveis no celular.
+    """
+
+    def setUp(self):
+        self.quarto = Quarto.objects.create(numero='901', bloco='N')
+        self.user_monitor = User.objects.create_user('mon_mobile', password='x')
+        Monitor.objects.create(
+            user=self.user_monitor, siape='1234567', cpf='11111111111',
+            bloco_responsavel='N',
+        )
+        self.user_estudante = User.objects.create_user('est_mobile', password='x')
+        Estudante.objects.create(
+            user=self.user_estudante, matricula='MOB1', cpf='22222222222',
+            quarto=self.quarto,
+        )
+        self.client = Client(SERVER_NAME='localhost')
+
+    @staticmethod
+    def nav_mobile(html):
+        m = re.search(
+            r'<nav aria-label="Navegação principal no celular".*?</nav>',
+            html, re.S,
+        )
+        return m.group(0) if m else ''
+
+    def test_monitor_tem_barra_inferior_com_as_rotas_do_menu(self):
+        self.client.force_login(self.user_monitor)
+        html = self.client.get(reverse('painel_monitor')).content.decode()
+        nav = self.nav_mobile(html)
+
+        self.assertIn('md:hidden fixed bottom-0', nav)
+        for rota in ('painel_monitor', 'chamados', 'gestao_monitor', 'logout'):
+            self.assertIn('href="%s"' % reverse(rota), nav)
+
+    def test_estudante_tem_barra_inferior_com_as_rotas_do_menu(self):
+        self.client.force_login(self.user_estudante)
+        html = self.client.get(reverse('painel_estudante')).content.decode()
+        nav = self.nav_mobile(html)
+
+        self.assertIn('md:hidden fixed bottom-0', nav)
+        for rota in ('painel_estudante', 'progresso', 'chamados', 'logout'):
+            self.assertIn('href="%s"' % reverse(rota), nav)
+
+    def test_barra_inferior_marca_uma_unica_aba_atual(self):
+        self.client.force_login(self.user_monitor)
+        nav = self.nav_mobile(
+            self.client.get(reverse('chamados')).content.decode()
+        )
+
+        self.assertEqual(nav.count('aria-current="page"'), 1)
+        ativo = [p for p in nav.split('<a ') if 'aria-current="page"' in p][0]
+        self.assertIn('href="%s"' % reverse('chamados'), ativo)
+
+    def test_criterio_das_janelas_nao_cita_cortinas(self):
+        """
+        No Bloco C as cortinas sao permitidas; o criterio deve falar apenas
+        de varais/objetos, senao o monitor reprova o quarto indevidamente.
+        """
+        self.client.force_login(self.user_monitor)
+        html = self.client.get(
+            reverse('detalhes_quarto', args=[self.quarto.id])
+        ).content.decode().lower()
+
+        self.assertNotIn('cortina', html)
+        self.assertIn('sem varais ou objetos nas janelas', html)
+
+
 class SimuladorDataTests(TestCase):
     """POST /monitor/simular-data/ avanca a data da sessao em +1 dia."""
 
